@@ -1,0 +1,16 @@
+%YAML:1.0 # need to specify the file type at the top!
+
+cam0:
+  T_imu_cam: #rotation from camera to IMU R_CtoI, T_ci:  (imu0 to cam0): 
+    - [ 0.02718179,  0.99963049,  0.00016451, -0.04161001]
+    - [ 0.99947191, -0.02717454, -0.01781688, -0.03248713]
+    - [-0.01780582,  0.00064871, -0.99984125,  0.01582329]
+    - [ 0.,          0.,          0.,          1.        ]
+  cam_overlaps: [1]
+  camera_model: pinhole
+  distortion_coeffs: [0.12074137795631264, -0.20920583547822494, 0.0004345494327641424, -0.004506626338977132]
+  distortion_model: radtan
+  intrinsics: [ 583.78659631, 583.92860268, 308.97554204, 195.40298829 ]
+  resolution: [640, 400]
+  rostopic: /oakd/rgb/image_raw
+

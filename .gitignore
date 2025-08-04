@@ -1,0 +1,34 @@
+# Build artifacts
+cmake-build-*
+build/
+Build/
+devel/
+.catkin_tools/
+logs/
+
+# IDE and editor files
+*.*~
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Documentation
+doxgen_generated/
+doc/
+
+# Large data files - exclude all dataset files
+src/ov_data/**/*.csv
+src/ov_data/**/*.txt
+src/ov_data/**/*.mat
+
+# Large files (>10MB)
+*.csv
+*.txt
+*.mat
+
+# Keep only source code and configuration files
+!src/ov_data/**/matlab/*.m
+!src/ov_data/**/matlab/*.mat
+!src/ov_data/**/*.example
+!src/ov_data/**/ReadMe.txt

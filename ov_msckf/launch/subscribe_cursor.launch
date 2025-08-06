@@ -14,6 +14,7 @@
     <arg name="max_cameras" default="1" />
     <arg name="use_stereo"  default="false" />
 
+<node pkg="tf2_ros" type="static_transform_publisher" name="cam0_to_camera_rgb_optical_frame" args="0 0 0 0 0 0 1 cam0 camera_rgb_optical_frame"/> 
 
     <!-- MASTER NODE! -->
 <!--    <node name="ov_msckf" pkg="ov_msckf" type="run_subscribe_msckf" output="screen" clear_params="true" required="true" launch-prefix="gdb -ex run &#45;&#45;args">-->

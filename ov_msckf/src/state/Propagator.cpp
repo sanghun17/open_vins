@@ -31,8 +31,9 @@ using namespace ov_type;
 using namespace ov_msckf;
 
 void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timestamp) {
+  // PRINT_INFO("Propagator::propagate_and_clone(): Propagating from %f to %f\n", state->_timestamp, timestamp);
 
-  // If the difference between the current update time and state is zero
+  // If thPRINT_INFOe difference between the current update time and state is zero
   // We should crash, as this means we would have two clones at the same time!!!!
   if (state->_timestamp == timestamp) {
     PRINT_ERROR(RED "Propagator::propagate_and_clone(): Propagation called again at same timestep at last update timestep!!!!\n" RESET);
@@ -394,7 +395,7 @@ std::vector<ov_core::ImuData> Propagator::select_imu_readings(const std::vector<
 
 void Propagator::predict_and_compute(std::shared_ptr<State> state, const ov_core::ImuData &data_minus, const ov_core::ImuData &data_plus,
                                      Eigen::MatrixXd &F, Eigen::MatrixXd &Qd) {
-
+  // PRINT_INFO("Propagator::predict_and_compute(): Propagating from %f to %f\n", data_minus.timestamp, data_plus.timestamp);
   // Time elapsed over interval
   double dt = data_plus.timestamp - data_minus.timestamp;
   // assert(data_plus.timestamp>data_minus.timestamp);
@@ -405,16 +406,39 @@ void Propagator::predict_and_compute(std::shared_ptr<State> state, const ov_core
   Eigen::Matrix3d Tg = State::Tg(state->_calib_imu_tg->value());
 
   // Corrected imu acc measurements with our current biases
+  // PRINT_INFO("=== ACCELERATION PROCESSING DEBUG ===\n");
+  // PRINT_INFO("Raw IMU data_minus.am: %f %f %f\n", data_minus.am(0), data_minus.am(1), data_minus.am(2));
+  // PRINT_INFO("Raw IMU data_plus.am: %f %f %f\n", data_plus.am(0), data_plus.am(1), data_plus.am(2));
+  // PRINT_INFO("Current bias_a: %f %f %f\n", state->_imu->bias_a()(0), state->_imu->bias_a()(1), state->_imu->bias_a()(2));
+  
   Eigen::Vector3d a_hat1 = data_minus.am - state->_imu->bias_a();
   Eigen::Vector3d a_hat2 = data_plus.am - state->_imu->bias_a();
   Eigen::Vector3d a_hat_avg = .5 * (a_hat1 + a_hat2);
+  
+  // PRINT_INFO("After bias correction a_hat1: %f %f %f\n", a_hat1(0), a_hat1(1), a_hat1(2));
+  // PRINT_INFO("After bias correction a_hat2: %f %f %f\n", a_hat2(0), a_hat2(1), a_hat2(2));
 
   // Convert "raw" imu to its corrected frame using the IMU intrinsics
   Eigen::Vector3d a_uncorrected = a_hat_avg;
   Eigen::Matrix3d R_ACCtoIMU = state->_calib_imu_ACCtoIMU->Rot();
+  
+  // PRINT_INFO("IMU calibration Da matrix:\n");
+  // PRINT_INFO("%f %f %f\n", Da(0,0), Da(0,1), Da(0,2));
+  // PRINT_INFO("%f %f %f\n", Da(1,0), Da(1,1), Da(1,2));
+  // PRINT_INFO("%f %f %f\n", Da(2,0), Da(2,1), Da(2,2));
+  
+  // PRINT_INFO("R_ACCtoIMU rotation matrix:\n");
+  // PRINT_INFO("%f %f %f\n", R_ACCtoIMU(0,0), R_ACCtoIMU(0,1), R_ACCtoIMU(0,2));
+  // PRINT_INFO("%f %f %f\n", R_ACCtoIMU(1,0), R_ACCtoIMU(1,1), R_ACCtoIMU(1,2));
+  // PRINT_INFO("%f %f %f\n", R_ACCtoIMU(2,0), R_ACCtoIMU(2,1), R_ACCtoIMU(2,2));
+  
   a_hat1 = R_ACCtoIMU * Da * a_hat1;
   a_hat2 = R_ACCtoIMU * Da * a_hat2;
   a_hat_avg = R_ACCtoIMU * Da * a_hat_avg;
+  
+  // PRINT_INFO("After IMU calibration a_hat1: %f %f %f\n", a_hat1(0), a_hat1(1), a_hat1(2));
+  // PRINT_INFO("After IMU calibration a_hat2: %f %f %f\n", a_hat2(0), a_hat2(1), a_hat2(2));
+  // PRINT_INFO("Expected Z-axis should be around 5.8 (9.8 - 4.0) if gravity is properly removed\n");
 
   // Corrected imu gyro measurements with our current biases and gravity sensitivity
   Eigen::Vector3d w_hat1 = data_minus.wm - state->_imu->bias_g() - Tg * a_hat1;
@@ -499,6 +523,10 @@ void Propagator::predict_mean_discrete(std::shared_ptr<State> state, double dt, 
 
   // Velocity: just the acceleration in the local frame, minus global gravity
   new_v = state->_imu->vel() + R_Gtoi.transpose() * a_hat * dt - _gravity * dt;
+  // PRINT_INFO("a_hat: %f %f %f\n", a_hat(0), a_hat(1), a_hat(2));
+  // PRINT_INFO("R_GtoI.transpose()*a_hat: %f %f %f\n", R_Gtoi.transpose() * a_hat(0), R_Gtoi.transpose() * a_hat(1), R_Gtoi.transpose() * a_hat(2));
+  auto temp = R_Gtoi.transpose() * a_hat * dt - _gravity * dt;
+  // PRINT_INFO("R_GtoI.transpose()*a_hat*dt - _gravity*dt: %f %f %f\n", temp(0), temp(1), temp(2));
 
   // Position: just velocity times dt, with the acceleration integrated twice
   new_p = state->_imu->pos() + state->_imu->vel() * dt + 0.5 * R_Gtoi.transpose() * a_hat * dt * dt - 0.5 * _gravity * dt * dt;
@@ -507,7 +535,7 @@ void Propagator::predict_mean_discrete(std::shared_ptr<State> state, double dt, 
 void Propagator::predict_mean_rk4(std::shared_ptr<State> state, double dt, const Eigen::Vector3d &w_hat1, const Eigen::Vector3d &a_hat1,
                                   const Eigen::Vector3d &w_hat2, const Eigen::Vector3d &a_hat2, Eigen::Vector4d &new_q,
                                   Eigen::Vector3d &new_v, Eigen::Vector3d &new_p) {
-
+  // PRINT_INFO("Propagator::predict_mean_rk4(): Propagating from %f to %f\n", w_hat1(0), w_hat2(0));
   // Pre-compute things
   Eigen::Vector3d w_hat = w_hat1;
   Eigen::Vector3d a_hat = a_hat1;
@@ -525,6 +553,13 @@ void Propagator::predict_mean_rk4(std::shared_ptr<State> state, double dt, const
   Eigen::Vector3d p0_dot = v_0;
   Eigen::Matrix3d R_Gto0 = quat_2_Rot(quat_multiply(dq_0, q_0));
   Eigen::Vector3d v0_dot = R_Gto0.transpose() * a_hat - _gravity;
+
+  // PRINT_INFO("a_hat(1): %f %f %f\n", a_hat1(0), a_hat1(1), a_hat1(2));
+  // PRINT_INFO("a_hat2: %f %f %f\n", a_hat2(0), a_hat2(1), a_hat2(2));
+  Eigen::Vector3d temp = R_Gto0.transpose() * a_hat;
+  // PRINT_INFO("R_Gto0.transpose()*a_hat: %f %f %f\n", temp(0), temp(1), temp(2));
+  temp = temp - _gravity;
+  // PRINT_INFO("R_Gto0.transpose()*a_hat - _gravity: %f %f %f\n", temp(0), temp(1), temp(2));
 
   Eigen::Vector4d k1_q = q0_dot * dt;
   Eigen::Vector3d k1_p = p0_dot * dt;

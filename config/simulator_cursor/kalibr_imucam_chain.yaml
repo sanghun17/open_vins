@@ -1,10 +1,15 @@
 %YAML:1.0 # need to specify the file type at the top!
 
 cam0:
+  # T_imu_cam:
+  #   - [1.0, 0.0, 0.0, 0.0]
+  #   - [0.0, 1.0, 0.0, 0.0]
+  #   - [0.0, 0.0, 1.0, 0.0]
+  #   - [0.0, 0.0, 0.0, 1.0]
   T_imu_cam:
-    - [1.0, 0.0, 0.0, 0.25]
-    - [0.0, 1.0, 0.0, 0.0]
-    - [0.0, 0.0, 1.0, -0.25]
+    - [0.0, 0.0, 1.0, 0.25]
+    - [-1.0, 0.0, 0.0, 0.0]
+    - [0.0, -1.0, 0.0, 0.25]
     - [0.0, 0.0, 0.0, 1.0]
   cam_overlaps: [0]
   camera_model: pinhole
@@ -12,4 +17,4 @@ cam0:
   distortion_model: radtan
   intrinsics: [386.126953125, 320.0, 386.126953125, 240.0]
   resolution: [640,480]
-  rostopic: /camera/rgb/image_raw
+  rostopic: /camera/gray/image_raw

@@ -254,7 +254,7 @@ void VioManager::feed_measurement_simulation(double timestamp, const std::vector
 }
 
 void VioManager::track_image_and_update(const ov_core::CameraData &message_const) {
-
+  PRINT_DEBUG("VioManager::track_image_and_update(): Propagating from %f to %f\n", state->_timestamp, message_const.timestamp);
   // Start timing
   rT1 = boost::posix_time::microsec_clock::local_time();
 
@@ -321,7 +321,7 @@ void VioManager::track_image_and_update(const ov_core::CameraData &message_const
 }
 
 void VioManager::do_feature_propagate_update(const ov_core::CameraData &message) {
-
+  // PRINT_INFO("VioManager::do_feature_propagate_update(): Propagating from %f to %f\n", state->_timestamp, message.timestamp);
   //===================================================================================
   // State propagation, and clone augmentation
   //===================================================================================
@@ -338,8 +338,10 @@ void VioManager::do_feature_propagate_update(const ov_core::CameraData &message)
   // NOTE: if the state is already at the given time (can happen in sim)
   // NOTE: then no need to prop since we already are at the desired timestep
   if (state->_timestamp != message.timestamp) {
+    // PRINT_INFO("VioManager::state->_timestamp != message.timestamp: %f != %f, Propagating from %f to %f\n", state->_timestamp, message.timestamp, state->_timestamp, message.timestamp);
     propagator->propagate_and_clone(state, message.timestamp);
   }
+  // PRINT_INFO("VioManager::state->_timestamp == message.timestamp: %f == %f, Propagated from %f to %f\n", state->_timestamp, message.timestamp, state->_timestamp, message.timestamp);
   rT3 = boost::posix_time::microsec_clock::local_time();
 
   // If we have not reached max clones, we should just return...

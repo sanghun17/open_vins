@@ -119,22 +119,26 @@ bool StaticInitializer::initialize(double &timestamp, Eigen::MatrixXd &covarianc
   }
 
   // Get rotation with z axis aligned with -g (z_in_G=0,0,1)
-  Eigen::Vector3d z_axis = a_avg_2to1 / a_avg_2to1.norm();
-  Eigen::Matrix3d Ro;
+  Eigen::Vector3d z_axis = +1* (a_avg_2to1 / a_avg_2to1.norm());
+  Eigen::Matrix3d Ro; 
   InitializerHelper::gram_schmidt(z_axis, Ro);
   Eigen::Vector4d q_GtoI = rot_2_quat(Ro);
   
   // OVERRIDE: Set specific desired orientation
   // This will give the exact orientation you want
-  q_GtoI << 0.0, 0.0, -0.6750171875230732, -0.7378019885138876;
+  // q_GtoI << 0.0, 0.0, -0.6750171875230732, -0.7378019885138876;
   // Normalize quaternion
-  q_GtoI = q_GtoI / q_GtoI.norm();
+  // q_GtoI = q_GtoI / q_GtoI.norm();
 
   // Set our biases equal to our noise (subtract our gravity from accelerometer bias)
   Eigen::Vector3d gravity_inG;
   gravity_inG << 0.0, 0.0, params.gravity_mag;
   Eigen::Vector3d bg = w_avg_2to1;
   Eigen::Vector3d ba = a_avg_2to1 - quat_2_Rot(q_GtoI) * gravity_inG;
+
+  PRINT_INFO("z_axis: %f %f %f\n", z_axis(0), z_axis(1), z_axis(2));
+  PRINT_INFO("gravity_inG: %f %f %f\n", gravity_inG(0), gravity_inG(1), gravity_inG(2));
+  PRINT_INFO("ba: %f %f %f\n", ba(0), ba(1), ba(2));
 
   // Set our state variables
   timestamp = window_2to1.at(window_2to1.size() - 1).timestamp;
@@ -156,6 +160,7 @@ bool StaticInitializer::initialize(double &timestamp, Eigen::MatrixXd &covarianc
     PRINT_INFO(GREEN "[init-s]: Ground truth data used and cleared!\n" RESET);
   } else {
     // Use default values
+    PRINT_INFO(GREEN "[init-s]: Using default values for initialization!\n" RESET);
     imu_state.block(0, 0, 4, 1) = q_GtoI;
     imu_state.block(4, 0, 3, 1) << 0.0, 0.0, 0.0;
   }

@@ -187,7 +187,8 @@ struct VioManagerOptions {
   // STATE DEFAULTS ==========================
 
   /// Gravity magnitude in the global frame (i.e. should be 9.81 typically)
-  double gravity_mag = 9.81;
+  // double gravity_mag = 9.81;
+  double gravity_mag;
 
   /// Gyroscope IMU intrinsics (scale imperfection and axis misalignment, column-wise, inverse)
   Eigen::Matrix<double, 6, 1> vec_dw;

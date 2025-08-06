@@ -241,28 +241,28 @@ bool UpdaterZeroVelocity::try_update(std::shared_ptr<State> state, double timest
   if (!disparity_passed && (chi2 > _options.chi2_multipler * chi2_check || state->_imu->vel().norm() > _zupt_max_velocity)) {
     last_zupt_state_timestamp = 0.0;
     last_zupt_count = 0;
-    PRINT_DEBUG(YELLOW "[ZUPT]: rejected |v_IinG| = %.3f (chi2 %.3f > %.3f)\n" RESET, state->_imu->vel().norm(), chi2,
-                _options.chi2_multipler * chi2_check);
+    // PRINT_DEBUG(YELLOW "[ZUPT]: rejected |v_IinG| = %.3f (chi2 %.3f > %.3f)\n" RESET, state->_imu->vel().norm(), chi2,
+    //             _options.chi2_multipler * chi2_check);
     return false;
   }
   
   // ZUPT가 수락된 경우에만 상세 디버그 정보 출력
-  PRINT_INFO(CYAN "[ZUPT]: accepted |v_IinG| = %.3f (chi2 %.3f < %.3f)\n" RESET, state->_imu->vel().norm(), chi2,
-             _options.chi2_multipler * chi2_check);
+  // PRINT_INFO(CYAN "[ZUPT]: accepted |v_IinG| = %.3f (chi2 %.3f < %.3f)\n" RESET, state->_imu->vel().norm(), chi2,
+            //  _options.chi2_multipler * chi2_check);
   
   // Debug: Print detailed chi2 analysis (ZUPT 수락 시에만)
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] Residual size: %d, chi2: %.3f\n" RESET, (int)res.rows(), chi2);
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] Residual norm: %.3f, Residual max: %.3f\n" RESET, res.norm(), res.lpNorm<Eigen::Infinity>());
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] S matrix trace: %.3f, S matrix max: %.3f\n" RESET, S.trace(), S.lpNorm<Eigen::Infinity>());
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] Noise multiplier: %.3f, R matrix trace: %.3f\n" RESET, _zupt_noise_multiplier, R.trace());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] Residual size: %d, chi2: %.3f\n" RESET, (int)res.rows(), chi2);
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] Residual norm: %.3f, Residual max: %.3f\n" RESET, res.norm(), res.lpNorm<Eigen::Infinity>());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] S matrix trace: %.3f, S matrix max: %.3f\n" RESET, S.trace(), S.lpNorm<Eigen::Infinity>());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] Noise multiplier: %.3f, R matrix trace: %.3f\n" RESET, _zupt_noise_multiplier, R.trace());
   
   // Print first few residuals for debugging
-  for (int i = 0; i < std::min(3, (int)res.rows()); i++) {
-    PRINT_INFO(YELLOW "[ZUPT-DEBUG] Residual[%d]: %.6f\n" RESET, i, res(i));
-  }
+  // for (int i = 0; i < std::min(3, (int)res.rows()); i++) {
+  //   PRINT_INFO(YELLOW "[ZUPT-DEBUG] Residual[%d]: %.6f\n" RESET, i, res(i));
+  // }
   
   // Debug: Print IMU measurements vs expected values
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] === IMU MEASUREMENTS vs EXPECTED ===\n" RESET);
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] === IMU MEASUREMENTS vs EXPECTED ===\n" RESET);
   for (size_t i = 0; i < std::min(imu_recent.size(), (size_t)3); i++) {
     // Raw IMU measurements
     Eigen::Vector3d w_raw = imu_recent.at(i).wm;
@@ -270,7 +270,7 @@ bool UpdaterZeroVelocity::try_update(std::shared_ptr<State> state, double timest
     
     // Expected values (zero velocity assumption)
     Eigen::Vector3d w_expected = Eigen::Vector3d::Zero();  // ω = [0,0,0]
-    Eigen::Vector3d a_expected = Eigen::Vector3d(0, 0, 9.81);  // a = [0,0,g] (NED coordinate system)
+    // Eigen::Vector3d a_expected = Eigen::Vector3d(0, 0, 9.81);  // a = [0,0,g] (NED coordinate system)
     
     // Corrected IMU values (after bias correction)
     Eigen::Vector3d w_bias = state->_imu->bias_g();
@@ -278,31 +278,31 @@ bool UpdaterZeroVelocity::try_update(std::shared_ptr<State> state, double timest
     Eigen::Vector3d w_corrected = w_raw - w_bias;
     Eigen::Vector3d a_corrected = a_raw - a_bias;
     
-    PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: timestamp=%.4f\n" RESET, i, imu_recent.at(i).timestamp);
-    PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: w_raw=(%.3f,%.3f,%.3f), w_expected=(%.3f,%.3f,%.3f)\n" RESET, 
-               i, w_raw(0), w_raw(1), w_raw(2), w_expected(0), w_expected(1), w_expected(2));
-    PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: a_raw=(%.3f,%.3f,%.3f), a_expected=(%.3f,%.3f,%.3f)\n" RESET,
-               i, a_raw(0), a_raw(1), a_raw(2), a_expected(0), a_expected(1), a_expected(2));
-    PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: w_bias=(%.3f,%.3f,%.3f), a_bias=(%.3f,%.3f,%.3f)\n" RESET,
-               i, w_bias(0), w_bias(1), w_bias(2), a_bias(0), a_bias(1), a_bias(2));
-    PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: w_corrected=(%.3f,%.3f,%.3f), a_corrected=(%.3f,%.3f,%.3f)\n" RESET,
-               i, w_corrected(0), w_corrected(1), w_corrected(2), a_corrected(0), a_corrected(1), a_corrected(2));
+    // PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: timestamp=%.4f\n" RESET, i, imu_recent.at(i).timestamp);
+    // PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: w_raw=(%.3f,%.3f,%.3f), w_expected=(%.3f,%.3f,%.3f)\n" RESET, 
+    //            i, w_raw(0), w_raw(1), w_raw(2), w_expected(0), w_expected(1), w_expected(2));
+    // PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: a_raw=(%.3f,%.3f,%.3f), a_expected=(%.3f,%.3f,%.3f)\n" RESET,
+    //            i, a_raw(0), a_raw(1), a_raw(2), a_expected(0), a_expected(1), a_expected(2));
+    // PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: w_bias=(%.3f,%.3f,%.3f), a_bias=(%.3f,%.3f,%.3f)\n" RESET,
+    //            i, w_bias(0), w_bias(1), w_bias(2), a_bias(0), a_bias(1), a_bias(2));
+    // PRINT_INFO(YELLOW "[ZUPT-DEBUG] IMU[%zu]: w_corrected=(%.3f,%.3f,%.3f), a_corrected=(%.3f,%.3f,%.3f)\n" RESET,
+    //            i, w_corrected(0), w_corrected(1), w_corrected(2), a_corrected(0), a_corrected(1), a_corrected(2));
   }
   
   // Debug: Print state information
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] === STATE INFORMATION ===\n" RESET);
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] Current velocity: (%.3f,%.3f,%.3f), norm: %.3f\n" RESET,
-             state->_imu->vel()(0), state->_imu->vel()(1), state->_imu->vel()(2), state->_imu->vel().norm());
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] Current position: (%.3f,%.3f,%.3f)\n" RESET,
-             state->_imu->pos()(0), state->_imu->pos()(1), state->_imu->pos()(2));
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] === STATE INFORMATION ===\n" RESET);
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] Current velocity: (%.3f,%.3f,%.3f), norm: %.3f\n" RESET,
+  //            state->_imu->vel()(0), state->_imu->vel()(1), state->_imu->vel()(2), state->_imu->vel().norm());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] Current position: (%.3f,%.3f,%.3f)\n" RESET,
+  //            state->_imu->pos()(0), state->_imu->pos()(1), state->_imu->pos()(2));
   
   // Debug: Print S matrix components
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] === S MATRIX ANALYSIS ===\n" RESET);
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] H matrix size: %dx%d\n" RESET, (int)H.rows(), (int)H.cols());
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] P matrix size: %dx%d\n" RESET, (int)P_marg.rows(), (int)P_marg.cols());
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] H*P*H^T trace: %.3f\n" RESET, (H * P_marg * H.transpose()).trace());
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] R matrix trace: %.3f\n" RESET, R.trace());
-  PRINT_INFO(YELLOW "[ZUPT-DEBUG] S = H*P*H^T + R trace: %.3f\n" RESET, S.trace());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] === S MATRIX ANALYSIS ===\n" RESET);
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] H matrix size: %dx%d\n" RESET, (int)H.rows(), (int)H.cols());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] P matrix size: %dx%d\n" RESET, (int)P_marg.rows(), (int)P_marg.cols());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] H*P*H^T trace: %.3f\n" RESET, (H * P_marg * H.transpose()).trace());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] R matrix trace: %.3f\n" RESET, R.trace());
+  // PRINT_INFO(YELLOW "[ZUPT-DEBUG] S = H*P*H^T + R trace: %.3f\n" RESET, S.trace());
 
 
 
